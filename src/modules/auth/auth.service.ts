@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { sendOtpEmail } from '../../utils/email';
 import { ApiError } from '../../utils/apiError';
 import { generateTokens } from '../../utils/jwt';
@@ -184,9 +185,217 @@ const resendOtpUser = async (payload: any) => {
   };
 };
 
+// ──────────────────────────────────────────────────────────
+// Forgot Password Service
+// ──────────────────────────────────────────────────────────
+// ইউজার পাসওয়ার্ড ভুলে গেলে তার ইমেইলে একটি OTP পাঠানো হবে।
+const forgotPassword = async (payload: any) => {
+  const { email } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'No account found with this email address.');
+  }
+
+  // 2. নতুন ৬ ডিজিটের OTP তৈরি করছি
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // OTP ১০ মিনিটের জন্য ভ্যালিড
+
+  // 3. ডাটাবেজে OTP আপডেট করছি
+  await prisma.user.update({
+    where: { email },
+    data: { otp, otpExpiry },
+  });
+
+  // 4. ইউজারের ইমেইলে OTP পাঠাচ্ছি
+  await sendOtpEmail(email, otp);
+
+  return {
+    message: 'Password reset OTP sent to your email.',
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Verify Forgot Password OTP Service
+// ──────────────────────────────────────────────────────────
+// Forgot password OTP টি সঠিক কিনা যাচাই করা হবে। সঠিক হলে reset করার permission দেওয়া হবে।
+const verifyForgotPasswordOtp = async (payload: any) => {
+  const { email, otp } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found.');
+  }
+
+  // 2. OTP মিলছে কিনা চেক করছি
+  if (user.otp !== String(otp).trim()) {
+    throw new ApiError(400, 'Invalid OTP.');
+  }
+
+  // 3. OTP এর মেয়াদ শেষ হয়নি তো চেক করছি
+  if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+    throw new ApiError(400, 'OTP has expired. Please request a new one.');
+  }
+
+  // 4. OTP সঠিক হলে শুধু success মেসেজ দেব — password reset পরের ধাপে হবে
+  return {
+    message: 'OTP verified successfully. You can now reset your password.',
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Resend Forgot Password OTP Service
+// ──────────────────────────────────────────────────────────
+// Forgot password OTP expire হলে নতুন OTP পাঠানো হবে।
+const resendForgotPasswordOtp = async (payload: any) => {
+  const { email } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'No account found with this email address.');
+  }
+
+  // 2. নতুন ৬ ডিজিটের OTP তৈরি করছি
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // নতুন OTP ১০ মিনিটের জন্য ভ্যালিড
+
+  // 3. ডাটাবেজে নতুন OTP আপডেট করছি
+  await prisma.user.update({
+    where: { email },
+    data: { otp, otpExpiry },
+  });
+
+  // 4. ইউজারের ইমেইলে নতুন OTP পাঠাচ্ছি
+  await sendOtpEmail(email, otp);
+
+  return {
+    message: 'A new password reset OTP has been sent to your email.',
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Reset Password Service
+// ──────────────────────────────────────────────────────────
+// OTP verify করার পর ইউজার নতুন পাসওয়ার্ড সেট করতে পারবে।
+const resetPassword = async (payload: any) => {
+  const { email, otp, newPassword } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found.');
+  }
+
+  // 2. OTP মিলছে কিনা চেক করছি
+  if (user.otp !== String(otp).trim()) {
+    throw new ApiError(400, 'Invalid OTP.');
+  }
+
+  // 3. OTP এর মেয়াদ শেষ হয়নি তো চেক করছি
+  if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+    throw new ApiError(400, 'OTP has expired. Please request a new one.');
+  }
+
+  // 4. নতুন পাসওয়ার্ড bcrypt দিয়ে hash করছি
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+  // 5. নতুন পাসওয়ার্ড সেট করছি এবং OTP মুছে দিচ্ছি
+  await prisma.user.update({
+    where: { email },
+    data: {
+      password: hashedNewPassword,
+      otp: null,
+      otpExpiry: null,
+    },
+  });
+
+  return {
+    message: 'Password reset successful. Please login with your new password.',
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Refresh Token Service
+// ──────────────────────────────────────────────────────────
+// Access Token মেয়াদ শেষ হলে Refresh Token দিয়ে নতুন Access Token নেওয়া যাবে।
+const refreshAccessToken = async (payload: any) => {
+  const { token } = payload;
+
+  // 1. Refresh Token টি verify করা হচ্ছে
+  let decoded: any;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refreshSecret123');
+  } catch {
+    throw new ApiError(403, 'Invalid or expired refresh token.');
+  }
+
+  // 2. Decoded token থেকে user id দিয়ে ডাটাবেজে ইউজার খোঁজা হচ্ছে
+  const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+
+  if (!user) {
+    throw new ApiError(403, 'Invalid refresh token. User not found.');
+  }
+
+  // 3. সব ঠিকঠাক থাকলে নতুন Access Token ও Refresh Token জেনারেট করে রিটার্ন করছি
+  const tokens = generateTokens(user.id);
+
+  return {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Change Password Service (Protected — login করা ইউজারের জন্য)
+// ──────────────────────────────────────────────────────────
+// লগইন করা ইউজার তার পুরনো পাসওয়ার্ড দিয়ে নতুন পাসওয়ার্ড পরিবর্তন করতে পারবে।
+const changePassword = async (userId: number, payload: any) => {
+  const { oldPassword, newPassword } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found.');
+  }
+
+  // 2. পুরনো পাসওয়ার্ড সঠিক কিনা চেক করছি
+  const isMatch = await bcrypt.compare(oldPassword, user.password || '');
+
+  if (!isMatch) {
+    throw new ApiError(400, 'Incorrect old password.');
+  }
+
+  // 3. নতুন পাসওয়ার্ড bcrypt দিয়ে hash করছি
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+  // 4. ডাটাবেজে নতুন পাসওয়ার্ড আপডেট করছি
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedNewPassword },
+  });
+
+  return {
+    message: 'Password changed successfully.',
+  };
+};
+
 export const AuthService = {
   registerUser,
   loginUser,
   verifyOtpUser,
   resendOtpUser,
+  forgotPassword,
+  verifyForgotPasswordOtp,
+  resendForgotPasswordOtp,
+  resetPassword,           // নতুন: reset password service
+  refreshAccessToken,      // নতুন: refresh token service
+  changePassword,          // নতুন: change password service (protected)
 };

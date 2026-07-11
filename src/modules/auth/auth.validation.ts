@@ -46,3 +46,57 @@ export const resendOtpValidationSchema = z.object({
     email: z.string().email('Invalid email address'),
   }),
 });
+
+// ──────────────────────────────────────────────────────────
+// Forgot Password Validation Schema
+// ──────────────────────────────────────────────────────────
+// পাসওয়ার্ড ভুলে গেলে ইউজার তার ইমেইল দেবে, তারপর OTP পাঠানো হবে।
+export const forgotPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+  }),
+});
+
+// ──────────────────────────────────────────────────────────
+// Verify Forgot Password OTP Validation Schema
+// ──────────────────────────────────────────────────────────
+// Forgot password OTP verify করার সময় ইমেইল ও OTP দরকার হবে।
+export const verifyForgotPasswordOtpValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+    otp: z.string().length(6, 'OTP must be 6 digits'),
+  }),
+});
+
+// ──────────────────────────────────────────────────────────
+// Reset Password Validation Schema
+// ──────────────────────────────────────────────────────────
+// নতুন পাসওয়ার্ড সেট করার সময় ইমেইল, OTP এবং নতুন পাসওয়ার্ড দরকার হবে।
+export const resetPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+    otp: z.string().length(6, 'OTP must be 6 digits'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters long'),
+  }),
+});
+
+// ──────────────────────────────────────────────────────────
+// Refresh Token Validation Schema
+// ──────────────────────────────────────────────────────────
+// Access Token মেয়াদ শেষ হলে ইউজার refreshToken দিয়ে নতুন token পাবে।
+export const refreshTokenValidationSchema = z.object({
+  body: z.object({
+    token: z.string().min(1, 'Refresh token is required'),
+  }),
+});
+
+// ──────────────────────────────────────────────────────────
+// Change Password Validation Schema
+// ──────────────────────────────────────────────────────────
+// লগইন করা ইউজার পুরনো পাসওয়ার্ড দিয়ে নতুন পাসওয়ার্ড সেট করবে।
+export const changePasswordValidationSchema = z.object({
+  body: z.object({
+    oldPassword: z.string().min(1, 'Old password is required'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters long'),
+  }),
+});

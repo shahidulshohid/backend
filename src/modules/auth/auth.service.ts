@@ -95,7 +95,98 @@ const loginUser = async (payload: any) => {
   };
 };
 
+// ──────────────────────────────────────────────────────────
+// Verify OTP Service (রেজিস্ট্রেশনের পর OTP যাচাই করার জন্য)
+// ──────────────────────────────────────────────────────────
+const verifyOtpUser = async (payload: any) => {
+  const { email, otp } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  // 2. ইউজার আগেই ভেরিফাইড কিনা চেক করছি
+  if (user.isVerified) {
+    throw new ApiError(400, 'User already verified');
+  }
+
+  // 3. ইউজারের দেওয়া OTP ডাটাবেজের OTP এর সাথে মিলছে কিনা চেক করছি
+  if (user.otp !== String(otp).trim()) {
+    throw new ApiError(400, 'Invalid OTP');
+  }
+
+  // 4. OTP এর মেয়াদ শেষ হয়ে গেছে কিনা চেক করছি
+  if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+    throw new ApiError(400, 'OTP has expired. Please request a new one.');
+  }
+
+  // 5. সব ঠিকঠাক থাকলে ইউজারকে verified করে দিচ্ছি এবং OTP মুছে দিচ্ছি
+  const updatedUser = await prisma.user.update({
+    where: { email },
+    data: {
+      isVerified: true,
+      otp: null,
+      otpExpiry: null,
+    },
+  });
+
+  // 6. ভেরিফিকেশন সফল হলে JWT Token জেনারেট করে দিচ্ছি যাতে ইউজার সরাসরি লগইন হয়ে যায়
+  const { accessToken, refreshToken } = generateTokens(updatedUser.id);
+
+  return {
+    user: {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
+
+// ──────────────────────────────────────────────────────────
+// Resend OTP Service (রেজিস্ট্রেশনের জন্য নতুন OTP পাঠানো)
+// ──────────────────────────────────────────────────────────
+const resendOtpUser = async (payload: any) => {
+  const { email } = payload;
+
+  // 1. ইউজার ডাটাবেজে আছে কিনা চেক করছি
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found. Please register first.');
+  }
+
+  // 2. ইউজার ইতোমধ্যে ভেরিফাইড হলে আর OTP দরকার নেই
+  if (user.isVerified) {
+    throw new ApiError(400, 'Email is already verified.');
+  }
+
+  // 3. নতুন ৬ ডিজিটের OTP তৈরি করছি
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // নতুন OTP ১০ মিনিটের জন্য ভ্যালিড
+
+  // 4. ডাটাবেজে নতুন OTP আপডেট করছি
+  await prisma.user.update({
+    where: { email },
+    data: { otp, otpExpiry },
+  });
+
+  // 5. ইউজারের ইমেইলে নতুন OTP পাঠাচ্ছি
+  await sendOtpEmail(email, otp);
+
+  return {
+    message: 'A new OTP has been sent to your email.',
+  };
+};
+
 export const AuthService = {
   registerUser,
-  loginUser, // নতুন login service এক্সপোর্ট করা হলো
+  loginUser,
+  verifyOtpUser,
+  resendOtpUser,
 };

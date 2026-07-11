@@ -25,3 +25,24 @@ export const loginValidationSchema = z.object({
     password: z.string().min(1, 'Password is required'),
   }),
 });
+
+// ──────────────────────────────────────────────────────────
+// Verify OTP Validation Schema
+// ──────────────────────────────────────────────────────────
+// OTP ভেরিফাই করার সময় ইউজারকে ইমেইল এবং OTP কোড পাঠাতে হবে।
+export const verifyOtpValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+    otp: z.string().length(6, 'OTP must be 6 digits'),
+  }),
+});
+
+// ──────────────────────────────────────────────────────────
+// Resend OTP Validation Schema
+// ──────────────────────────────────────────────────────────
+// OTP পুনরায় পাঠানোর সময় শুধু ইমেইল দরকার হবে।
+export const resendOtpValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+  }),
+});

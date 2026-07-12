@@ -100,3 +100,13 @@ export const changePasswordValidationSchema = z.object({
     newPassword: z.string().min(6, 'New password must be at least 6 characters long'),
   }),
 });
+
+// ──────────────────────────────────────────────────────────
+// Google Login Validation Schema
+// ──────────────────────────────────────────────────────────
+// Google login এর সময় idToken পাঠাতে হবে।
+export const googleLoginValidationSchema = z.object({
+  body: z.object({
+    idToken: z.string().min(1, 'idToken is required'),
+  }),
+});

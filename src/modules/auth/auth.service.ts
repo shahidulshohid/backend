@@ -4,11 +4,13 @@ import jwt from 'jsonwebtoken';
 import { sendOtpEmail } from '../../utils/email';
 import { ApiError } from '../../utils/apiError';
 import { generateTokens } from '../../utils/jwt';
+import { OAuth2Client } from 'google-auth-library';
 
 // auth.service.ts ফাইলটি মূলত ডাটাবেজের সাথে যোগাযোগ করার কাজ করে।
 // Controller থেকে ডাটা এখানে আসে, এরপর Service ডাটাবেজে ডাটা সেভ বা চেক করে রেজাল্ট ফেরত দেয়।
 
 const prisma = new PrismaClient();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ──────────────────────────────────────────────────────────
 // Register User Service
@@ -387,6 +389,65 @@ const changePassword = async (userId: number, payload: any) => {
   };
 };
 
+// ──────────────────────────────────────────────────────────
+// Google Login Service
+// ──────────────────────────────────────────────────────────
+const googleLogin = async (payload: any) => {
+  const { idToken } = payload;
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const tokenPayload = ticket.getPayload();
+  if (!tokenPayload) {
+    throw new ApiError(401, 'Invalid Google Token');
+  }
+
+  const { email, name, sub: googleId } = tokenPayload;
+
+  if (!email) {
+    throw new ApiError(400, 'Email not found in Google Token');
+  }
+
+  let user = await prisma.user.findUnique({ where: { email } });
+
+  if (user) {
+    if (!(user as any).googleId) {
+      user = await prisma.user.update({
+        where: { email },
+        data: { googleId, isVerified: true } as any,
+      });
+    }
+  } else {
+    // Create a random dummy password for google user
+    const dummyPassword = await bcrypt.hash(Math.random().toString(36).slice(-10) + 'GoOgLe', 10);
+    user = await prisma.user.create({
+      data: {
+        name: name || '',
+        email,
+        googleId,
+        isVerified: true,
+        password: dummyPassword,
+      } as any,
+    });
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user.id);
+
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   registerUser,
   loginUser,
@@ -398,4 +459,5 @@ export const AuthService = {
   resetPassword,           // নতুন: reset password service
   refreshAccessToken,      // নতুন: refresh token service
   changePassword,          // নতুন: change password service (protected)
+  googleLogin,             // নতুন: google login service
 };

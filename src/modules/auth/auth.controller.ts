@@ -12,6 +12,7 @@ import {
   resetPasswordValidationSchema,
   refreshTokenValidationSchema,
   changePasswordValidationSchema,
+  googleLoginValidationSchema,
 } from './auth.validation';
 
 // auth.controller.ts ফাইলটির কাজ হলো ইউজারের রিকোয়েস্ট (Request) রিসিভ করা এবং রেসপন্স (Response) দেওয়া।
@@ -303,7 +304,7 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // 2. protect middleware থেকে পাওয়া req.user.id দিয়ে AuthService-কে password change করতে বলা হচ্ছে
-  const userId = req.user!.id;
+  const userId = (req as any).user.id;
   const result = await AuthService.changePassword(userId, req.body);
 
   // 3. সফলভাবে password বদলানো হলে ইউজারকে জানানো হচ্ছে
@@ -312,6 +313,35 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
       200,
       result,
       'Password changed successfully.'
+    )
+  );
+});
+
+// ──────────────────────────────────────────────────────────
+// Google Login Controller
+// ──────────────────────────────────────────────────────────
+const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+  // 1. Zod দিয়ে idToken চেক করা হচ্ছে
+  const validationResult = googleLoginValidationSchema.safeParse({ body: req.body });
+
+  if (!validationResult.success) {
+    res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      errors: validationResult.error.issues,
+    });
+    return;
+  }
+
+  // 2. AuthService-কে Google Token দিয়ে যাচাই করতে বলা হচ্ছে
+  const result = await AuthService.googleLogin(req.body);
+
+  // 3. সফলভাবে লগইন হলে ইউজারকে তার ডাটা ও JWT Token সহ রেসপন্স দেওয়া হচ্ছে
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      result,
+      'Google Login successful'
     )
   );
 });
@@ -327,4 +357,5 @@ export const AuthController = {
   resetPassword,           // নতুন: reset password controller
   refreshToken,            // নতুন: refresh token controller
   changePassword,          // নতুন: change password controller (protected)
+  googleLogin,             // নতুন: google login controller
 };

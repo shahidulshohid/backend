@@ -20,7 +20,7 @@ const registerUser = async (payload: any) => {
 
   // 1. চেক করছি ইউজার আগে থেকেই ডাটাবেজে আছে কিনা
   let user = await prisma.user.findUnique({ where: { email } });
-  
+
   if (user && user.isVerified) {
     throw new ApiError(400, 'Email already registered and verified');
   }

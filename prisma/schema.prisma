@@ -10,14 +10,57 @@ generator client {
 model User {
   id         Int       @id @default(autoincrement())
   createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt @default(now())
   email      String    @unique
-  name       String?
-  password   String?
-  googleId   String?   @unique
-  isVerified Boolean   @default(false)
+  name       String?   // ইউজারের নাম
+  password   String?   // পাসওয়ার্ড
+  googleId   String?   @unique // গুগল লগইনের জন্য গুগল আইডি
+  isVerified Boolean   @default(false) // ইমেইল ভেরিফাইড কিনা
+
+  // --- iza_backend থেকে আনা অতিরিক্ত ফিল্ডসমূহ ---
+  fullName      String?   // ইউজারের পুরো নাম
+  phoneNumber   String?   // ফোন নম্বর
+  nid           String?   // জাতীয় পরিচয়পত্র নম্বর
+  streetAddress String?   // রাস্তা/গ্রামের ঠিকানা
+  city          String?   // শহর
+  zip           String?   // জিপ কোড
+  country       String?   // দেশ
+  dateOfBirth   DateTime? // জন্ম তারিখ
+  language      String?    @default("en") // ভাষা
+  profileImage  String?   // প্রোফাইল ছবি
+  hobby         String[]   @default([]) // শখসমূহ (PostgreSQL-এ অ্যারে সাপোর্ট করে)
+  role          Role       @default(USER) // রোল (যেমন: USER, ADMIN, PSYCHOLOGIST, SUPER_ADMIN)
+  status        UserStatus @default(ACTIVE) // অ্যাকাউন্টের অবস্থা
+  referralCode  String?   // রেফারাল কোড
+  fcmToken      String?   // পুশ নোটিফিকেশনের টোকেন
+  aboutMe       String?   // ব্যবহারকারীর বিবরণ
+
+  // সাইকোলজিস্ট ভেরিফিকেশন ও অনুমোদন সংক্রান্ত ফিল্ড
+  approvalStatus  PsychologistApprovalStatus?
+  approvedBy      Int?                        // কোন অ্যাডমিন অনুমোদন করেছেন তার আইডি
+  approvalDate    DateTime?
+  rejectionReason String?
+
+  // স্ট্রাইপ পেমেন্ট সংক্রান্ত ফিল্ড
+  stripeCustomerId       String? // পেমেন্ট করার জন্য
+  stripeConnectId        String? // সাইকোলজিস্টদের পেমেন্ট রিসিভ করার জন্য
+  stripeAccountOnboarded Boolean @default(false)
+  stripeAccountStatus    String?
+
+  // প্রফেশনাল ফিল্ড (সাইকোলজিস্টদের জন্য)
+  yearsOfExperience  Int?
+  areaOfExpertise    String[] @default([])
+  companyName        String?
+  registrationNumber String?
+  vatNumber          String?
+  onlineStatus       OnlineStatus @default(online)
+  callRate           Float?   @default(2)
+
+  isCallEnabled    Boolean @default(true)
+  isProfileUpdated Boolean @default(false)
+
   otp        String?
   otpExpiry  DateTime?
-  role       Role      @default(USER)
   posts      Post[]
 }
 
@@ -31,7 +74,31 @@ model Post {
   authorId  Int
 }
 
+// ইউজারের রোলের এনাম
 enum Role {
-  USER
+  SUPER_ADMIN
   ADMIN
+  PSYCHOLOGIST
+  USER
+}
+
+// ইউজারের অ্যাকাউন্টের অবস্থার এনাম
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+// সাইকোলজিস্টদের অনলাইনের অবস্থার এনাম
+enum OnlineStatus {
+  online
+  offline
+  busy
+}
+
+// সাইকোলজিস্টদের অনুমোদনের অবস্থার এনাম
+enum PsychologistApprovalStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
 }

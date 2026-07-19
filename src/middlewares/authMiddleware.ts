@@ -17,6 +17,7 @@ declare global {
         id: number;
         name: string | null;
         email: string;
+        role: string;
       };
     }
   }
@@ -40,9 +41,10 @@ const protect = async (req: Request, res: Response, next: NextFunction): Promise
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123') as { id: number };
 
     // 4. Decoded token থেকে user id ব্যবহার করে database থেকে user এর তথ্য আনা হচ্ছে
+    // এখানে role ফিল্ডটি ও সিলেক্ট করা হচ্ছে যাতে অ্যাডমিন চেক মিডলওয়্যারে এটি ব্যবহার করা যায়
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, name: true, email: true }, // পাসওয়ার্ড বাদ দিয়ে শুধু দরকারী তথ্য আনছি
+      select: { id: true, name: true, email: true, role: true }, // পাসওয়ার্ড বাদ দিয়ে শুধু দরকারী তথ্য আনছি
     });
 
     if (!user) {

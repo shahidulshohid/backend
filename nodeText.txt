@@ -129,3 +129,30 @@ package.json ফাইলের "scripts" এর ভেতর নিচের �
 ✅ সামারি:
 ইউজারের রিকোয়েস্টের ফ্লো:
 Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ auth.routes.ts ➜ auth.controller.ts ➜ auth.service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: ইউজার মডিউল (User Module Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে `User` মডেলে `iza_backend` থেকে অতিরিক্ত সমস্ত প্রয়োজনীয় ফিল্ড এবং এনামসমূহ (Role, UserStatus, OnlineStatus, PsychologistApprovalStatus) যুক্ত করেছি।
+
+২. ইউজার মডিউল ফাইলসমূহ (User Module Files):
+--------------------------------------------
+-> src/modules/user/user.routes.ts (ইউজারের বিভিন্ন রাউট যেমন profile, update, delete, public psychics, settings ইত্যাদি ডিফাইন করা হয়েছে এবং রোল চেক করার জন্য restrictTo মিডলওয়্যার হেল্পার ব্যবহার করা হয়েছে)
+-> src/modules/user/user.controller.ts (ইনপুট Zod ভ্যালিডেশন নিশ্চিত করে এবং UserService কল করে এক্সপ্রেস রেসপন্স ApiResponse-এর মাধ্যমে ক্লায়েন্টে পাঠায়)
+-> src/modules/user/user.service.ts (সরাসরি Prisma Client ব্যবহার করে ডাটাবেজে ইউজার ডাটা রিড, রাইট, আপডেট এবং ডিলিট অপারেশনগুলো সম্পাদন করে)
+-> src/modules/user/user.validation.ts (Zod ব্যবহার করে ইউজার প্রোফাইল আপডেট বা অনলাইন স্ট্যাটাস আপডেটের বডি/কোয়েরি ভ্যালিডেশন স্কিমা তৈরি করা হয়েছে)
+
+৩. গ্লোবাল মিডলওয়্যার আপডেট:
+---------------------------
+-> src/middlewares/authMiddleware.ts (এখানে `req.user` অবজেক্টের জন্য এক্সপ্রেস রিকোয়েস্ট ইন্টারফেসে `role: string` যুক্ত করা হয়েছে এবং ডাটাবেজ সিলেক্ট কোয়েরিতে role নিয়ে আসা হয়েছে যাতে রোল-বেজড রেস্ট্রিকশন কাজ করে)
+
+৪. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts (এখানে `/users` এ রিকোয়েস্ট পাঠাতে userRoutes মিডলওয়্যার যুক্ত করা হয়েছে)
+
+✅ ইউজার রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ user.routes.ts ➜ user.controller.ts ➜ user.service.ts ➜ Database!

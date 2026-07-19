@@ -43,6 +43,9 @@ router.post('/refresh-token', AuthController.refreshToken);
 // protect middleware JWT verify করে, তারপর Controller কল হবে
 router.post('/change-password', protect, AuthController.changePassword); 
 
+// POST /api/v1/auth/logout → লগইন করা ইউজার লগআউট করবে
+router.post('/logout', protect, AuthController.logout); 
+
 // ─── GOOGLE LOGIN ────────────────────────────────────────────────────────────
 // POST /api/v1/auth/google-login → Google ID token দিয়ে লগইন বা রেজিস্ট্রেশন করবে
 router.post('/google-login', AuthController.googleLogin);

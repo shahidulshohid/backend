@@ -346,6 +346,21 @@ const googleLogin = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+// ──────────────────────────────────────────────────────────
+// Logout Controller (লগআউট করার জন্য)
+// ──────────────────────────────────────────────────────────
+const logout = asyncHandler(async (req: Request, res: Response) => {
+  // যেহেতু টোকেনগুলো স্টেটলেস JWT, তাই আমরা শুধুমাত্র একটি সফল রেসপন্স রিটার্ন করব।
+  // ক্লায়েন্ট নিজ দায়িত্বে তাদের লোকাল স্টোরেজ থেকে টোকেনগুলো মুছে ফেলবে।
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      null,
+      'Logout successful'
+    )
+  );
+});
+
 export const AuthController = {
   register,
   verifyOtp,
@@ -358,4 +373,5 @@ export const AuthController = {
   refreshToken,            // নতুন: refresh token controller
   changePassword,          // নতুন: change password controller (protected)
   googleLogin,             // নতুন: google login controller
+  logout,                  // নতুন: logout controller
 };

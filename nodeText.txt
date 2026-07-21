@@ -155,4 +155,226 @@ Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ auth.routes.ts ➜ auth.control
 -> src/routes/main.ts (এখানে `/users` এ রিকোয়েস্ট পাঠাতে userRoutes মিডলওয়্যার যুক্ত করা হয়েছে)
 
 ✅ ইউজার রিকোয়েস্ট ফ্লো:
-Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ user.routes.ts ➜ user.controller.ts ➜ user.service.ts ➜ Database!
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ user.routes.ts ➜ user.controller.ts ➜ user.service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: ক্যাটাগরি, কন্টেন্ট ও সেটিংস মডিউল (Batch 1 Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে নতুন ৪টি মডেল ও এনাম যোগ করেছি:
+- Category (ক্যাটাগরি টাইপ: SERVICE / PRODUCT, স্ট্যাটাস: ACTIVE / INACTIVE)
+- TermsAndConditions (ইউজার ও সাইকোলজিস্ট রোলের জন্য শর্তাবলী)
+- PrivacyPolicy (ইউজার ও সাইকোলজিস্ট রোলের জন্য প্রাইভেসি পলিসি)
+- SessionSettings (কল মিনিমাম সময়, লাইভ কমেন্ট চার্জ, রেভিনিউ শেয়ার পার্সেন্টেজ: সাইকোলজিস্ট ৭০% ও অ্যাডমিন ৩০%, পেআউট রিলিজ দিন)
+- PlatformSettings (মিনিমাম পেআউট, বেস কারেন্সি EUR, টপআপ লিমিট)
+
+২. ক্যাটাগরি মডিউল ফাইলসমূহ (Category Module Files):
+------------------------------------------------
+-> src/modules/category/category.routes.ts (পাবলিক এবং অ্যাডমিন ভিত্তিক ক্যাটাগরি CRUD রাউটসমূহ)
+-> src/modules/category/category.controller.ts (কন্ট্রোলারের মাধ্যমে এক্সপ্রেস রেসপন্স রিটার্ন করা)
+-> src/modules/category/category.service.ts (Prisma Client দিয়ে ক্যাটাগরি ক্রিয়েট, ফিল্টারিং, সার্চ ও ডিলিট অপারেশন)
+-> src/modules/category/category.validation.ts (Zod স্কিমা ভ্যালিডেশন)
+
+৩. কন্টেন্ট মডিউল ফাইলসমূহ (Content Module Files):
+------------------------------------------------
+-> src/modules/content/content.routes.ts (/terms-and-condition এবং /privacy-policy এন্ডপয়েন্টসমূহ)
+-> src/modules/content/content.controller.ts (কন্টেন্ট রিড এবং Upsert রেসপন্স পাঠানো)
+-> src/modules/content/content.service.ts (Prisma upsert এর মাধ্যমে কন্টেন্ট ক্রিয়েট বা আপডেট সম্পন্ন করা)
+-> src/modules/content/content.validation.ts (Zod ভ্যালিডেশন)
+
+৪. সেটিংস মডিউল ফাইলসমূহ (Settings Module Files):
+------------------------------------------------
+-> src/modules/settings/settings.routes.ts (/session-settings এবং /payout-release-day এন্ডপয়েন্টসমূহ)
+-> src/modules/settings/settings.controller.ts (সেটিংস পাওয়া ও আপডেট করার কন্ট্রোলার)
+-> src/modules/settings/settings.service.ts (সেশন সেটিংস অটো জেনারেট এবং আপডেট করার লজিক)
+-> src/modules/settings/settings.validation.ts (Zod ভ্যালিডেশন)
+
+৫. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts-এ `/categories`, `/contents`, এবং `/settings` এন্ডপয়েন্টগুলো রেজিস্টার করা হয়েছে।
+
+✅ ক্যাটাগরি / কন্টেন্ট / সেটিংস রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ [category/content/settings].routes.ts ➜ controller.ts ➜ service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: সোশ্যাল ও কমিউনিটি মডিউল (Batch 2 Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে কমিউনিটির জন্য ৭টি নতুন মডেল এবং এনাম যোগ করেছি:
+- Story, StorySeen, StoryReact (ছবি ও প্রাইভেসি সহ ইউজারের স্টোরি পোস্ট, দেখা ও রিঅ্যাক্ট ট্র্যাক করার জন্য)
+- Follow (ইউজারদের পরস্পরকে ফলো ও আনফলো করার ট্র্যাকিং)
+- BlockedUser (অন্য কোনো ইউজারকে ব্লক বা আনফলো করার রিলিজ লজিক)
+- Notification (ইন-অ্যাপ পুশ ও অ্যাকশন ভিত্তিক নোটিফিকেশন সিস্টেম)
+- Referral (রেফারাল কোড জেনারেট ও ইউজার বোনাস রিওয়ার্ড ট্র্যাকিং)
+
+২. স্টোরি মডিউল ফাইলসমূহ (Story Module Files):
+-------------------------------------------
+-> src/modules/story/story.routes.ts (স্টোরি পোস্ট, ফিড দেখা, রিঅ্যাক্ট ও ডিলিট এন্ডপয়েন্টসমূহ)
+-> src/modules/story/story.controller.ts (কন্ট্রোলারের মাধ্যমে এক্সপ্রেস রেসপন্স পাঠানো)
+-> src/modules/story/story.service.ts (Prisma Client দিয়ে স্টোরি সেভ, সিন কাউন্ট ও রিঅ্যাক্ট ম্যানেজমেন্ট)
+-> src/modules/story/story.validation.ts (Zod স্কিমা ভ্যালিডেশন)
+
+৩. ব্লক ইউজার মডিউল ফাইলসমূহ (Block User Module Files):
+---------------------------------------------------
+-> src/modules/block-user/block.routes.ts (/block, /unblock, /my-blocked এন্ডপয়েন্ট)
+-> src/modules/block-user/block.controller.ts (ইউজার ব্লক ও আনব্লক রেসপন্স পাঠানো)
+-> src/modules/block-user/block.service.ts (অন্য ইউজারকে ব্লক করা এবং ব্লক লিস্ট ফিল্টার লজিক)
+-> src/modules/block-user/block.validation.ts (Zod ভ্যালিডেশন)
+
+৪. ফলো মডিউল ফাইলসমূহ (Follow Module Files):
+------------------------------------------
+-> src/modules/follow/follow.routes.ts (/follow/:userId, /unfollow/:userId, /followers, /following এন্ডপয়েন্ট)
+-> src/modules/follow/follow.controller.ts (ফলোয়ার্স ও ফলোয়িং তালিকা রেসপন্স)
+-> src/modules/follow/follow.service.ts (ফলো ট্র্যাকিং এবং স্বয়ংক্রিয় নোটিফিকেশন জেনারেট লজিক)
+-> src/modules/follow/follow.validation.ts (Zod ভ্যালিডেশন)
+
+৫. নোটিফিকেশন মডিউল ফাইলসমূহ (Notification Module Files):
+------------------------------------------------------
+-> src/modules/notification/notification.routes.ts (নোটিফিকেশন দেখা, পড়া চিহ্নিত করা ও ডিলিট করা)
+-> src/modules/notification/notification.controller.ts (ইনবক্স ও আনরিড কাউন্ট রেসপন্স)
+-> src/modules/notification/notification.service.ts (Prisma দিয়ে নোটিফিকেশন ফেচ ও স্টেটাস আপডেট)
+-> src/modules/notification/notification.validation.ts (Zod ভ্যালিডেশন)
+
+৬. রেফারাল মডিউল ফাইলসমূহ (Referral Module Files):
+------------------------------------------------
+-> src/modules/referral/referral.routes.ts (/my-code এবং /claim এন্ডপয়েন্ট)
+-> src/modules/referral/referral.controller.ts (রেফারাল কোড ক্লেইম রেসপন্স)
+-> src/modules/referral/referral.service.ts (ইউনিক রেফারাল কোড অটো-জেনারেট ও বোনাস লজিক)
+-> src/modules/referral/referral.validation.ts (Zod ভ্যালিডেশন)
+
+৭. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts-এ `/stories`, `/block-users`, `/follows`, `/notifications`, এবং `/referrals` রেজিস্টার করা হয়েছে।
+
+✅ সোশ্যাল ও কমিউনিটি রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ [story/block/follow/notification/referral].routes.ts ➜ controller.ts ➜ service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: ফিন্যান্সিয়াল, ওয়ালেট ও পেমেন্ট মডিউল (Batch 3 Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে অর্থ লেনদেন ও পেআউটের জন্য ৫টি মডেল ও ৪টি এনাম যোগ করেছি:
+- Wallet (ইউজারের ব্যালেন্স ট্র্যাকিং এর জন্য ওয়ালেট)
+- Transaction (TOPUP, PAYOUT, REFERRAL_REWARD, PAYMENT সহ সর্বমোট লেনদেনের অটোমেটিক হিস্ট্রি)
+- TopUp (ওয়ালেটে ব্যালেন্স রিচার্জ ও পেমেন্ট ইনটেন্ট)
+- PayoutRequest (সাইকোলজিস্টদের উপার্জিত অর্থ ব্যাংকে উইথড্র করার আবেদন)
+- PaymentMethod (স্ট্রাইপ কার্ড বা ব্যাংক অ্যাকাউন্টের বিবরণ)
+
+২. ওয়ালেট মডিউল ফাইলসমূহ (Wallet Module Files):
+-------------------------------------------
+-> src/modules/wallet/wallet.routes.ts (/my-wallet, /transactions, /admin/manual-transaction এন্ডপয়েন্ট)
+-> src/modules/wallet/wallet.controller.ts (ওয়ালেট ব্যালেন্স ও হিস্ট্রি রেসপন্স পাঠানো)
+-> src/modules/wallet/wallet.service.ts (Prisma Transaction এর মাধ্যমে নিরাপদ ব্যালেন্স ক্রেডিট/ডেবিট লজিক)
+-> src/modules/wallet/wallet.validation.ts (Zod ভ্যালিডেশন)
+
+৩. পেমেন্ট ও পেআউট মডিউল ফাইলসমূহ (Payment Module Files):
+-------------------------------------------------------
+-> src/modules/payment/payment.routes.ts (/topup/create-intent, /topup/confirm, /payout/request, /methods)
+-> src/modules/payment/payment.controller.ts (টপআপ প্রসেস ও উইথড্র রিকুয়েস্ট রেসপন্স)
+-> src/modules/payment/payment.service.ts (টপআপ সম্পন্ন হলে ওয়ালেট অটো রিচার্জ এবং পেআউট রিকুয়েস্ট ক্রিয়েট লজিক)
+-> src/modules/payment/payment.validation.ts (Zod ভ্যালিডেশন)
+
+৪. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts-এ `/wallets` এবং `/payments` অ্যান্ডপয়েন্টগুলো সফলভাবে যুক্ত করা হয়েছে।
+
+✅ ফিন্যান্সিয়াল রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ [wallet/payment].routes.ts ➜ controller.ts ➜ service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: ই-কমার্স মডিউল (Batch 4 Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে প্রডাক্ট ক্রয় ও অর্ডারের জন্য ৯টি মডেল এবং ৩টি এনাম যুক্ত করেছি:
+- Product, ProductImage, ProductTag, ProductSize (পণ্য তৈরি, ছবি, ট্যাগ ও বিভিন্ন সাইজ ম্যানেজমেন্ট)
+- ShippingAddress (ইউজারের ডেলিভারি ঠিকানা)
+- Cart, CartItem (ইউজারের অনলাইন শপিং কার্ট ও আইটেম প্রাইস স্ন্যাপশট)
+- Order, OrderItem (অর্ডার প্লেসমেন্ট, ইউনিক ORD আইডি, ট্র্যাকিং আইডি, স্ন্যাপশট ও ডেলিভারি চার্জ হিসাব)
+
+২. প্রডাক্ট মডিউল ফাইলসমূহ (Product Module Files):
+----------------------------------------------
+-> src/modules/product/product.routes.ts (পাবলিক প্রডাক্ট ব্রাউজিং এবং অ্যাডমিন প্রোডাক্ট ক্রিয়েট/আপডেট/ডিলিট)
+-> src/modules/product/product.controller.ts (কন্ট্রোলারের মাধ্যমে এক্সপ্রেস রেসপন্স রিটার্ন করা)
+-> src/modules/product/product.service.ts (ডিসকাউন্ট শতাংশ হিসাব করে ফাইনাল প্রাইস অটো-ক্যালকুলেশন ও ফিল্টারিং)
+-> src/modules/product/product.validation.ts (Zod স্কিমা ভ্যালিডেশন)
+
+৩. কার্ট মডিউল ফাইলসমূহ (Cart Module Files):
+------------------------------------------
+-> src/modules/cart/cart.routes.ts (/add, /item/:itemId, /clear এন্ডপয়েন্ট)
+-> src/modules/cart/cart.controller.ts (কার্ট আইটেম ও সাবটোটাল রেসপন্স)
+-> src/modules/cart/cart.service.ts (কার্টে একই প্রডাক্ট থাকলে কোয়ান্টিটি বৃদ্ধি এবং নতুন প্রডাক্ট থাকলে আইটেম ক্রিয়েট)
+-> src/modules/cart/cart.validation.ts (Zod ভ্যালিডেশন)
+
+৪. শিপিং ঠিকানা মডিউল ফাইলসমূহ (Shipping Address Module Files):
+-----------------------------------------------------------
+-> src/modules/shipping-address/shipping-address.routes.ts (ইউজারের ঠিকানা সেভ, আপডেট, ডিফল্ট করা ও ডিলিট)
+-> src/modules/shipping-address/shipping-address.controller.ts (শিপিং ঠিকানা লিস্ট রেসপন্স)
+-> src/modules/shipping-address/shipping-address.service.ts (Prisma দিয়ে ঠিকানা তৈরি ও আগের ডিফল্ট রিমুভ করা)
+-> src/modules/shipping-address/shipping-address.validation.ts (Zod ভ্যালিডেশন)
+
+৫. অর্ডার মডিউল ফাইলসমূহ (Order Module Files):
+--------------------------------------------
+-> src/modules/order/order.routes.ts (/create, /my-orders, /:id, /:id/status এন্ডপয়েন্ট)
+-> src/modules/order/order.controller.ts (অর্ডার কনফার্মেশন ও ট্র্যাকিং রেসপন্স)
+-> src/modules/order/order.service.ts (Prisma Transaction এর মাধ্যমে অর্ডার ক্রিয়েট, অ্যাড্রেস স্ন্যাপশট সেভ ও কার্ট অটো-ক্লিয়ার করা)
+-> src/modules/order/order.validation.ts (Zod ভ্যালিডেশন)
+
+৬. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts-এ `/products`, `/cart`, `/shipping-addresses`, এবং `/orders` সাকসেসফুলি রেজিস্টার করা হয়েছে।
+
+✅ ই-কমার্স রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ [product/cart/shipping-address/order].routes.ts ➜ controller.ts ➜ service.ts ➜ Database!
+
+
+=========================================================
+      নতুন সংযোজন: কল, রিভিউ ও অ্যাডমিন মডিউল (Batch 5 & 6 Flow)
+=========================================================
+
+১. ডেটাবেজ স্কিমা আপডেট:
+------------------------
+আমরা `backend/prisma/schema.prisma` ফাইলে রিয়েলটাইম কল, ফিডব্যাক এবং ড্যাশবোর্ড ম্যানেজমেন্টের জন্য ২টি নতুন মডেল ও ২টি এনাম যুক্ত করেছি:
+- CallSession (অডিও/ভিডিও কল সেশন সময়কাল, চ্যানেল নাম, কলার-রিভার্স রিলেশন এবং মিনিমাম সেটিংস অনুযায়ী রেভিনিউ স্প্লিট (সাইকোলজিস্ট ৭০%, অ্যাডমিন ৩০%) সহ চার্জ হিসাব)
+- Review (কল সেশন বা প্রডাক্ট বিক্রয়ের পর ইউজার রেটিং ও কমেন্ট জমা রাখা)
+
+২. কল সেশন মডিউল ফাইলসমূহ (Call Session Module Files):
+-----------------------------------------------------
+-> src/modules/call/call.routes.ts (/initiate, /accept/:callId, /end/:callId, /history এন্ডপয়েন্ট)
+-> src/modules/call/call.controller.ts (কল সেশন ও রিয়েলটাইম চার্জিং রেসপন্স)
+-> src/modules/call/call.service.ts (কল শেষে সময় অনুযায়ী ইউজার ওয়ালেট থেকে টাকা কেটে সাইকোলজিস্ট ও অ্যাডমিন ওয়ালেটে স্বয়ংক্রিয় ক্রেডিটের লজিক)
+-> src/modules/call/call.validation.ts (Zod ভ্যালিডেশন)
+
+৩. সেশন রিভিউ মডিউল ফাইলসমূহ (Session Review Module Files):
+---------------------------------------------------------
+-> src/modules/session-review/session-review.routes.ts (সাইকোলজিস্টকে রিভিউ দেওয়া ও পড়া)
+-> src/modules/session-review/session-review.controller.ts (এভারেজ রেটিং ও রিভিউ ফিডব্যাক রেসপন্স)
+-> src/modules/session-review/session-review.service.ts (Prisma aggregate ব্যবহার করে গড় রেটিং গণনা)
+-> src/modules/session-review/session-review.validation.ts (Zod ভ্যালিডেশন)
+
+৪. অ্যাডমিন মডিউল ফাইলসমূহ (Admin Module Files):
+----------------------------------------------
+-> src/modules/admin/admin.routes.ts (/dashboard/overview, /users, /psychologists, /approve, /reject, /status)
+-> src/modules/admin/admin.controller.ts (ড্যাশবোর্ড অ্যানালিটিক্স ও ইউজার অ্যাপ্রুভাল রেসপন্স)
+-> src/modules/admin/admin.service.ts (মোট ইউজার, মোট ইনকাম, সাইকোলজিস্ট পেন্ডিং অ্যাপ্লিকেশন অ্যাপ্রুভ/রিজেক্ট এবং ইউজার ব্লক করার সুপার-অ্যাডমিন পাওয়ার)
+-> src/modules/admin/admin.validation.ts (Zod ভ্যালিডেশন)
+
+৫. মেইন রাউটার আপডেট:
+----------------------
+-> src/routes/main.ts-এ `/calls`, `/session-reviews`, এবং `/admin` এন্ডপয়েন্টসমূহ রেজিস্টার করা হয়েছে।
+
+✅ সম্পূর্ণ সিস্টেমের রিকোয়েস্ট ফ্লো:
+Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ Module Routes ➜ Module Controller ➜ Module Service ➜ Prisma Database!
+
+

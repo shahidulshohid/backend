@@ -62,7 +62,40 @@ model User {
   otp        String?
   otpExpiry  DateTime?
   posts      Post[]
+
+  // সামাজিক ও কমিউনিটি রিলেশনশিপসমূহ
+  stories               Story[]
+  storySeen             StorySeen[]
+  storyReacts           StoryReact[]
+  followers             Follow[]        @relation("FollowedUser")
+  following             Follow[]        @relation("FollowingUser")
+  blockedUsers          BlockedUser[]   @relation("BlockerUser")
+  blockedByUsers        BlockedUser[]   @relation("BlockedUser")
+  notificationsSent     Notification[]  @relation("NotificationSender")
+  notificationsReceived Notification[]  @relation("NotificationReceiver")
+
+  // ওয়ালেট ও পেমেন্ট রিলেশনশিপসমূহ
+  wallet         Wallet?
+  topups         TopUp[]
+  payoutRequests PayoutRequest[]
+  paymentMethods PaymentMethod[]
+
+  // ই-কমার্স রিলেশনশিপসমূহ
+  cart              Cart?
+  shippingAddresses ShippingAddress[]
+  orders            Order[]
+
+  // কল ও রিভিউ রিলেশনশিপসমূহ
+  callsAsCaller   CallSession[] @relation("CallCaller")
+  callsAsReceiver CallSession[] @relation("CallReceiver")
+  reviewsGiven    Review[]      @relation("ReviewUser")
+  reviewsReceived Review[]      @relation("ReviewPsychic")
+
+  // রেফারাল রিলেশনশিপসমূহ
+  referralsGiven    Referral[] @relation("ReferrerUser")
+  referralsReceived Referral[] @relation("RefereeUser")
 }
+
 
 model Post {
   id        Int      @id @default(autoincrement())
@@ -74,7 +107,249 @@ model Post {
   authorId  Int
 }
 
+
+
+enum TransactionType {
+  REFERRAL_REWARD
+  WITHDRAWAL
+  PAYMENT
+  REFUND
+  TOPUP
+  PAYOUT
+  PLATFORM_FEE
+  CALL_SESSION
+  LIVE_SESSION
+  GIFT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentMethodType {
+  STRIPE_CARD
+  BANK_ACCOUNT
+}
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id            Int               @id @default(autoincrement())
+  walletId      Int
+  amount        Float
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  description   String
+  topupId       Int?
+  payoutId      Int?
+  callSessionId Int?
+  currency      String            @default("EUR")
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  wallet      Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  topup       TopUp?       @relation(fields: [topupId], references: [id])
+  payout      PayoutRequest? @relation(fields: [payoutId], references: [id])
+  callSession CallSession? @relation(fields: [callSessionId], references: [id])
+}
+
+
+model TopUp {
+  id                    Int               @id @default(autoincrement())
+  userId                Int
+  amount                Float
+  currency              String            @default("EUR")
+  exchangeRate          Float             @default(1)
+  euroAmount            Float
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  status                TransactionStatus @default(PENDING)
+  failureReason         String?
+  metadata              Json?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model PayoutRequest {
+  id               Int          @id @default(autoincrement())
+  userId           Int
+  paymentMethodId  Int?
+  requestedAmount  Float
+  currency         String       @default("EUR")
+  exchangeRate     Float        @default(1)
+  status           PayoutStatus @default(PENDING)
+  adminNote        String?
+  processedBy      Int?
+  processedAt      DateTime?
+  stripeTransferId String?
+  stripePayoutId   String?
+  failureReason    String?
+  metadata         Json?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  transactions  Transaction[]
+}
+
+model PaymentMethod {
+  id                    Int               @id @default(autoincrement())
+  userId                Int
+  type                  PaymentMethodType
+  isDefault             Boolean           @default(false)
+  stripePaymentMethodId String?
+  cardLast4             String?
+  cardBrand             String?
+  cardExpMonth          Int?
+  cardExpYear           Int?
+  bankName              String?
+  accountLast4          String?
+  accountHolderName     String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payoutRequests PayoutRequest[]
+}
+
+
+enum StoryPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  FOLLOW
+  LIVE_STARTED
+  CALL_REQUEST
+  MESSAGE
+}
+
+model Story {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  images    String[]     @default([])
+  privacy   StoryPrivacy @default(PUBLIC)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seenBy    StorySeen[]
+  reactions StoryReact[]
+}
+
+model StorySeen {
+  id        Int      @id @default(autoincrement())
+  storyId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+}
+
+model StoryReact {
+  id        Int      @id @default(autoincrement())
+  storyId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+}
+
+model Follow {
+  id         Int      @id @default(autoincrement())
+  followerId Int
+  followedId Int
+  createdAt  DateTime @default(now())
+
+  follower User @relation("FollowingUser", fields: [followerId], references: [id], onDelete: Cascade)
+  followed User @relation("FollowedUser", fields: [followedId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followedId])
+}
+
+model BlockedUser {
+  id        Int      @id @default(autoincrement())
+  blockerId Int
+  blockedId Int
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blockerUser User @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedUser User @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+model Notification {
+  id         Int              @id @default(autoincrement())
+  senderId   Int?
+  receiverId Int
+  type       NotificationType
+  title      String
+  message    String
+  data       Json?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  sender   User? @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  receiver User  @relation("NotificationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Referral {
+  id           Int      @id @default(autoincrement())
+  referrerId   Int
+  refereeId    Int
+  code         String
+  rewardAmount Float    @default(0)
+  status       String   @default("COMPLETED")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  referrer User @relation("ReferrerUser", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("RefereeUser", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@unique([refereeId])
+}
+
+
 // ইউজারের রোলের এনাম
+
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -102,3 +377,277 @@ enum PsychologistApprovalStatus {
   APPROVED
   REJECTED
 }
+
+// ক্যাটাগরি টাইপ (সার্ভিস নাকি প্রডাক্ট)
+enum CategoryType {
+  SERVICE
+  PRODUCT
+}
+
+// ক্যাটাগরি স্ট্যাটাস
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// ক্যাটাগরি মডেল
+model Category {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  type      CategoryType
+  image     String?
+  status    CategoryStatus @default(ACTIVE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  products Product[]
+}
+
+// শর্তাবলী (Terms & Conditions) মডেল
+model TermsAndConditions {
+  id        Int      @id @default(autoincrement())
+  content   String
+  type      Role     @unique // USER বা PSYCHOLOGIST এর জন্য
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// প্রাইভেসি পলিসি মডেল
+model PrivacyPolicy {
+  id        Int      @id @default(autoincrement())
+  content   String
+  type      Role     @unique // USER বা PSYCHOLOGIST এর জন্য
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// সেশন সেটিংস মডেল
+model SessionSettings {
+  id                      Int      @id @default(autoincrement())
+  minimumCallMinutes      Int      @default(5)
+  liveCommentYesNoCost    Float    @default(5)
+  liveCommentDetailedCost Float    @default(10)
+  psychologistPercentage  Float    @default(70)
+  adminPercentage         Float    @default(30)
+  payoutReleaseDay        Int      @default(1)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+// প্ল্যাটফর্ম সেটিংস মডেল
+model PlatformSettings {
+  id                  Int      @id @default(autoincrement())
+  minPayoutAmount     Float    @default(10)
+  baseCurrency        String   @default("EUR")
+  supportedCurrencies String[] @default(["EUR", "USD", "GBP"])
+  minTopupAmount      Float    @default(5)
+  maxTopupAmount      Float    @default(10000)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// ================= ই-কমার্স মডেলসমূহ =================
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+  DRAFT
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  COMPLETED
+}
+
+enum OrderPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Product {
+  id                 Int           @id @default(autoincrement())
+  name               String
+  description        String
+  regularPrice       Float
+  discountPercentage Float         @default(0)
+  finalPrice         Float
+  weight             Float?
+  categoryId         Int
+  category           Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status             ProductStatus @default(ACTIVE)
+  isFeatured         Boolean       @default(false)
+  createdBy          Int
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  images  ProductImage[]
+  tags    ProductTag[]
+  sizes   ProductSize[]
+  reviews Review[]
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ProductTag {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       String
+
+  @@unique([productId, tag])
+}
+
+model ProductSize {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String
+
+  @@unique([productId, size])
+}
+
+model ShippingAddress {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  streetAddress String
+  country       String
+  city          String
+  zipCode       String
+  phoneNumber   String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id            Int      @id @default(autoincrement())
+  cartId        Int
+  cart          Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId     Int
+  selectedSize  String?
+  quantity      Int      @default(1)
+  priceSnapshot Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([cartId, productId, selectedSize])
+}
+
+model Order {
+  id                   Int                @id @default(autoincrement())
+  orderId              String             @unique
+  trackingId           String             @unique
+  userId               Int
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shippingAddressId    Int?
+  shippingAddress      ShippingAddress?   @relation(fields: [shippingAddressId], references: [id])
+  shippingSnapshot     Json
+  subtotal             Float
+  deliveryCharge       Float              @default(0)
+  tax                  Float              @default(0)
+  grandTotal           Float
+  status               OrderStatus        @default(PENDING)
+  paymentStatus        OrderPaymentStatus @default(PENDING)
+  paymentMethod        String?
+  expectedDeliveryDate DateTime?
+  items                OrderItem[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    Int
+  productName  String
+  productImage String?
+  selectedSize String?
+  quantity     Int
+  unitPrice    Float
+  totalPrice   Float
+  createdAt    DateTime @default(now())
+}
+
+// ================= কল ও রিভিউ মডেলসমূহ =================
+
+enum CallStatus {
+  INITIATED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  ENDED
+  MISSED
+  BUSY
+}
+
+enum ReviewType {
+  CALL_SESSION
+  PRODUCT_PURCHASE
+}
+
+model CallSession {
+  id                  Int        @id @default(autoincrement())
+  callerId            Int
+  receiverId          Int
+  channelName         String     @unique
+  status              CallStatus @default(INITIATED)
+  startedAt           DateTime?
+  endedAt             DateTime?
+  duration            Int?
+  amountSpent         Float      @default(0)
+  psychologistEarning Float      @default(0)
+  adminEarning        Float      @default(0)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  caller       User          @relation("CallCaller", fields: [callerId], references: [id], onDelete: Cascade)
+  receiver     User          @relation("CallReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  reviews      Review[]
+  transactions Transaction[]
+}
+
+model Review {
+  id        Int        @id @default(autoincrement())
+  sessionId Int?
+  userId    Int
+  psychicId Int?
+  productId Int?
+  rating    Float
+  comment   String?
+  type      ReviewType @default(CALL_SESSION)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user    User         @relation("ReviewUser", fields: [userId], references: [id], onDelete: Cascade)
+  psychic User?        @relation("ReviewPsychic", fields: [psychicId], references: [id], onDelete: Cascade)
+  session CallSession? @relation(fields: [sessionId], references: [id])
+  product Product?     @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+

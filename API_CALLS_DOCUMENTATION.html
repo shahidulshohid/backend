@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>API Mapping & Integration Documentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
+        @page {
+            size: A4 landscape;
+            margin: 15mm 15mm 15mm 15mm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'Inter', sans-serif;
+                font-size: 10px;
+                color: #64748b;
+            }
+        }
+
+        body {
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+            font-size: 12px;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 24px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            color: #38bdf8;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #94a3b8;
+            margin: 0 0 16px 0;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .section-header {
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            page-break-after: avoid;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+            text-align: center;
+        }
+
+        .stats-num {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0284c7;
+        }
+
+        .stats-title {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .alert-box {
+            background-color: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-left: 4px solid #f43f5e;
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .alert-box h3 {
+            margin: 0 0 8px 0;
+            color: #be123c;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .alert-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .alert-box li {
+            margin-bottom: 4px;
+            color: #4c0519;
+        }
+
+        table.api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        table.api-table th, table.api-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.api-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        table.api-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .method-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+        }
+
+        .method-get { background-color: #e0f2fe; color: #0369a1; }
+        .method-post { background-color: #dcfce7; color: #15803d; }
+        .method-patch { background-color: #fef9c3; color: #a16207; }
+        .method-delete { background-color: #fee2e2; color: #b91c1c; }
+
+        .code-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            background-color: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+
+        .mismatch-highlight {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .file-link {
+            color: #0284c7;
+            text-decoration: none;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header-title">API Integration & Mapping Documentation</div>
+        <div class="header-subtitle">ফ্রন্টএন্ড ক্লায়েন্ট কল (Frontend API Client) থেকে ব্যাকএন্ড কন্ট্রোলার হ্যান্ডলারের পুঙ্খানুপুঙ্খ ম্যাপিং গাইড</div>
+        <div class="header-meta">
+            <div class="meta-item"><span class="meta-label">Project:</span> <span class="meta-value">Mental Health & E-Commerce App</span></div>
+            <div class="meta-item"><span class="meta-label">Generated on:</span> <span class="meta-value">7/22/2026, 6:12:05 PM</span></div>
+            <div class="meta-item"><span class="meta-label">Engine:</span> <span class="meta-value">Automated Static Code Analysis</span></div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-num">76</div>
+            <div class="stats-title">Total Frontend client methods</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-num">43</div>
+            <div class="stats-title">Active Methods in Frontend UI</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-num">95</div>
+            <div class="stats-title">Total backend routes detected</div>
+        </div>
+    </div>
+
+    <div class="alert-box">
+        <h3>⚠️ এপিআই এর অসঙ্গতিসমূহ (Detected Path / Method Mismatches & Missing APIs)</h3>
+        <ul>
+            <li><strong>ডিফল্ট শিপিং অ্যাড্রেস নির্ধারণ (Missing API):</strong> 
+                <span class="code-text">api.setDefaultAddress</span> ➔ PATCH <span class="code-text">/shipping-addresses/${id}/default</span> ব্যাকএন্ড রাউটে ডিফাইন করা নেই।
+            </li>
+            <li><strong>ইউজার ব্লক/আনব্লক অসঙ্গতি:</strong> 
+                ব্লক করতে ফ্রন্টএন্ডে POST <span class="code-text">/block-users</span> ব্যবহৃত হয় কিন্তু ব্যাকএন্ডে রাউটটি হচ্ছে POST <span class="code-text">/block-users/block</span>। 
+                আনব্লক করতে ফ্রন্টএন্ডে DELETE <span class="code-text">/block-users/${id}</span> ব্যবহৃত হয় কিন্তু ব্যাকএন্ডে রাউটটি হচ্ছে POST <span class="code-text">/block-users/unblock</span>।
+            </li>
+            <li><strong>ফলো/আনফলো অসঙ্গতি:</strong> 
+                ফলো করতে ফ্রন্টএন্ডে POST <span class="code-text">/follows/${id}</span> ব্যবহৃত হয় কিন্তু ব্যাকএন্ডে রাউটটি হচ্ছে POST <span class="code-text">/follows/follow/:userId</span>। 
+                আনফলো করতে ফ্রন্টএন্ডে DELETE <span class="code-text">/follows/${id}</span> ব্যবহৃত হয় কিন্তু ব্যাকএন্ডে রাউটটি হচ্ছে POST <span class="code-text">/follows/unfollow/:userId</span>।
+            </li>
+            <li><strong>স্ট্রাইপ ওয়ালেট টপআপ:</strong> 
+                ফ্রন্টএন্ডে POST <span class="code-text">/payments/topup/stripe-intent</span> ব্যবহৃত হলেও ব্যাকএন্ডে রয়েছে POST <span class="code-text">/payments/topup/create-intent</span>।
+            </li>
+            <li><strong>রেফারাল বোনাস:</strong> 
+                ফ্রন্টএন্ডে GET <span class="code-text">/referrals/my-referrals</span> ব্যবহৃত হলেও ব্যাকএন্ডে রয়েছে GET <span class="code-text">/referrals/my-code</span>।
+            </li>
+        </ul>
+    </div>
+
+    <div class="section-header">📋 Complete API Map Table (সম্পূর্ণ এপিআই ম্যাপিং তালিকা)</div>
+    <table class="api-table">
+        <thead>
+            <tr>
+                <th style="width: 15%">Module</th>
+                <th style="width: 20%">Frontend API Method</th>
+                <th style="width: 8%">Method</th>
+                <th style="width: 22%">Endpoint Path</th>
+                <th style="width: 15%">Frontend Call Location(s)</th>
+                <th style="width: 20%">Backend Route Handler</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.register</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/register</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/register/page.tsx#L25">app/register/page.tsx:L25</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L12">src/modules/auth/auth.routes.ts:L12</a><br>➔ <code>AuthController.register</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.verifyOtp</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/verify-otp</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/verify-otp/page.tsx#L44">app/verify-otp/page.tsx:L44</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L15">src/modules/auth/auth.routes.ts:L15</a><br>➔ <code>AuthController.verifyOtp</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.resendRegisterOtp</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/resend-otp/register</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/verify-otp/page.tsx#L74">app/verify-otp/page.tsx:L74</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L18">src/modules/auth/auth.routes.ts:L18</a><br>➔ <code>AuthController.resendOtp</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.login</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/login</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/login/page.tsx#L28">app/login/page.tsx:L28</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L22">src/modules/auth/auth.routes.ts:L22</a><br>➔ <code>AuthController.login</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.forgotPassword</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/forgot-password</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/forgot-password/page.tsx#L23">app/forgot-password/page.tsx:L23</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L26">src/modules/auth/auth.routes.ts:L26</a><br>➔ <code>AuthController.forgotPassword</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.verifyForgotPasswordOtp</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/verify-forgot-password-otp</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L29">src/modules/auth/auth.routes.ts:L29</a><br>➔ <code>AuthController.verifyForgotPasswordOtp</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.resendForgotPasswordOtp</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/resend-otp/forgot-password</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/reset-password/page.tsx#L70">app/reset-password/page.tsx:L70</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L32">src/modules/auth/auth.routes.ts:L32</a><br>➔ <code>AuthController.resendForgotPasswordOtp</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.resetPassword</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/reset-password</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/reset-password/page.tsx#L43">app/reset-password/page.tsx:L43</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L35">src/modules/auth/auth.routes.ts:L35</a><br>➔ <code>AuthController.resetPassword</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.changePassword</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/change-password</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/profile/page.tsx#L158">app/profile/page.tsx:L158</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L44">src/modules/auth/auth.routes.ts:L44</a><br>➔ <code>AuthController.changePassword</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.googleLogin</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/google-login</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/login/page.tsx#L55">app/login/page.tsx:L55</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L51">src/modules/auth/auth.routes.ts:L51</a><br>➔ <code>AuthController.googleLogin</code></td>
+            </tr>
+            <tr>
+                <td><strong>AUTH MODULE</strong></td>
+                <td><code class="code-text">api.logout</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/auth/logout</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/components/Navbar.tsx#L46">components/Navbar.tsx:L46</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/auth/auth.routes.ts#L47">src/modules/auth/auth.routes.ts:L47</a><br>➔ <code>AuthController.logout</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.getProfile</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/users/profile</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/profile/page.tsx#L68">app/profile/page.tsx:L68</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L26">src/modules/user/user.routes.ts:L26</a><br>➔ <code>UserController.getProfile</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.updateProfile</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/users/profile</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/profile/page.tsx#L94">app/profile/page.tsx:L94</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/profile/page.tsx#L126">app/profile/page.tsx:L126</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L29">src/modules/user/user.routes.ts:L29</a><br>➔ <code>UserController.updateProfile</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.markProfileUpdated</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/users/profile/complete</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L32">src/modules/user/user.routes.ts:L32</a><br>➔ <code>UserController.markProfileUpdated</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.uploadProfileImage</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/users/profile/image</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L35">src/modules/user/user.routes.ts:L35</a><br>➔ <code>UserController.uploadProfileImage</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.deleteProfileImage</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/users/profile/image</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L38">src/modules/user/user.routes.ts:L38</a><br>➔ <code>UserController.deleteProfileImage</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.getPublicPsychologists</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/users/psychics/public</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/page.tsx#L48">app/page.tsx:L48</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/psychologists/page.tsx#L68">app/psychologists/page.tsx:L68</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L49">src/modules/user/user.routes.ts:L49</a><br>➔ <code>UserController.getAllPsychicsPublic</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.getPsychicProfile</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/users/psychic/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L52">src/modules/user/user.routes.ts:L52</a><br>➔ <code>UserController.getPsychicProfile</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.getPsychicStats</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/users/psychic/${id}/stats</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L55">src/modules/user/user.routes.ts:L55</a><br>➔ <code>UserController.getPsychicStats</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.updateOnlineStatus</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/users/online-status</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/profile/page.tsx#L176">app/profile/page.tsx:L176</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L58">src/modules/user/user.routes.ts:L58</a><br>➔ <code>UserController.updateOnlineStatus</code></td>
+            </tr>
+            <tr>
+                <td><strong>USER MODULE</strong></td>
+                <td><code class="code-text">api.updateCallSettings</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/users/call-settings</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/user/user.routes.ts#L66">src/modules/user/user.routes.ts:L66</a><br>➔ <code>UserController.updateCallSetting</code></td>
+            </tr>
+            <tr>
+                <td><strong>CATEGORIES MODULE</strong></td>
+                <td><code class="code-text">api.getPublicCategories</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/categories/public</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L74">app/admin/page.tsx:L74</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/store/page.tsx#L46">app/store/page.tsx:L46</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/category/category.routes.ts#L35">src/modules/category/category.routes.ts:L35</a><br>➔ <code>CategoryController.getAllCategories</code></td>
+            </tr>
+            <tr>
+                <td><strong>CATEGORIES MODULE</strong></td>
+                <td><code class="code-text">api.getCategoryById</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/categories/public/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/category/category.routes.ts#L42">src/modules/category/category.routes.ts:L42</a><br>➔ <code>CategoryController.getCategoryById</code></td>
+            </tr>
+            <tr>
+                <td><strong>CATEGORIES MODULE</strong></td>
+                <td><code class="code-text">api.createCategory</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/categories</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L147">app/admin/page.tsx:L147</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/category/category.routes.ts#L49">src/modules/category/category.routes.ts:L49</a><br>➔ <code>CategoryController.createCategory</code></td>
+            </tr>
+            <tr>
+                <td><strong>CATEGORIES MODULE</strong></td>
+                <td><code class="code-text">api.updateCategory</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/categories/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/category/category.routes.ts#L75">src/modules/category/category.routes.ts:L75</a><br>➔ <code>CategoryController.updateCategory</code></td>
+            </tr>
+            <tr>
+                <td><strong>CATEGORIES MODULE</strong></td>
+                <td><code class="code-text">api.deleteCategory</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/categories/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/category/category.routes.ts#L84">src/modules/category/category.routes.ts:L84</a><br>➔ <code>CategoryController.deleteCategory</code></td>
+            </tr>
+            <tr>
+                <td><strong>PRODUCTS MODULE</strong></td>
+                <td><code class="code-text">api.getAllProducts</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/products${params ? </code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L75">app/admin/page.tsx:L75</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/page.tsx#L49">app/page.tsx:L49</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/store/page.tsx#L45">app/store/page.tsx:L45</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/product/product.routes.ts#L26">src/modules/product/product.routes.ts:L26</a><br>➔ <code>ProductController.getAllProducts</code></td>
+            </tr>
+            <tr>
+                <td><strong>PRODUCTS MODULE</strong></td>
+                <td><code class="code-text">api.getSingleProduct</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/products/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/product/product.routes.ts#L29">src/modules/product/product.routes.ts:L29</a><br>➔ <code>ProductController.getSingleProduct</code></td>
+            </tr>
+            <tr>
+                <td><strong>PRODUCTS MODULE</strong></td>
+                <td><code class="code-text">api.createProduct</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/products</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L166">app/admin/page.tsx:L166</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/product/product.routes.ts#L32">src/modules/product/product.routes.ts:L32</a><br>➔ <code>ProductController.createProduct</code></td>
+            </tr>
+            <tr>
+                <td><strong>PRODUCTS MODULE</strong></td>
+                <td><code class="code-text">api.updateProduct</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/products/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/product/product.routes.ts#L41">src/modules/product/product.routes.ts:L41</a><br>➔ <code>ProductController.updateProduct</code></td>
+            </tr>
+            <tr>
+                <td><strong>PRODUCTS MODULE</strong></td>
+                <td><code class="code-text">api.deleteProduct</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/products/${id}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L195">app/admin/page.tsx:L195</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/product/product.routes.ts#L50">src/modules/product/product.routes.ts:L50</a><br>➔ <code>ProductController.deleteProduct</code></td>
+            </tr>
+            <tr>
+                <td><strong>CART MODULE</strong></td>
+                <td><code class="code-text">api.getMyCart</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/cart</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L58">app/cart/page.tsx:L58</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/cart/cart.routes.ts#L12">src/modules/cart/cart.routes.ts:L12</a><br>➔ <code>CartController.getMyCart</code></td>
+            </tr>
+            <tr>
+                <td><strong>CART MODULE</strong></td>
+                <td><code class="code-text">api.addToCart</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/cart/add</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/page.tsx#L104">app/page.tsx:L104</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/store/page.tsx#L75">app/store/page.tsx:L75</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/cart/cart.routes.ts#L15">src/modules/cart/cart.routes.ts:L15</a><br>➔ <code>CartController.addToCart</code></td>
+            </tr>
+            <tr>
+                <td><strong>CART MODULE</strong></td>
+                <td><code class="code-text">api.updateCartItem</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/cart/item/${itemId}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L84">app/cart/page.tsx:L84</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/cart/cart.routes.ts#L23">src/modules/cart/cart.routes.ts:L23</a><br>➔ <code>CartController.updateCartItem</code></td>
+            </tr>
+            <tr>
+                <td><strong>CART MODULE</strong></td>
+                <td><code class="code-text">api.removeCartItem</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/cart/item/${itemId}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L95">app/cart/page.tsx:L95</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/cart/cart.routes.ts#L31">src/modules/cart/cart.routes.ts:L31</a><br>➔ <code>CartController.removeCartItem</code></td>
+            </tr>
+            <tr>
+                <td><strong>CART MODULE</strong></td>
+                <td><code class="code-text">api.clearCart</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/cart/clear</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/cart/cart.routes.ts#L34">src/modules/cart/cart.routes.ts:L34</a><br>➔ <code>CartController.clearCart</code></td>
+            </tr>
+            <tr>
+                <td><strong>SHIPPING ADDRESS MODULE</strong></td>
+                <td><code class="code-text">api.getMyAddresses</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/shipping-addresses</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L60">app/cart/page.tsx:L60</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/shipping-address/shipping-address.routes.ts#L15">src/modules/shipping-address/shipping-address.routes.ts:L15</a><br>➔ <code>ShippingAddressController.getMyShippingAddresses</code></td>
+            </tr>
+            <tr>
+                <td><strong>SHIPPING ADDRESS MODULE</strong></td>
+                <td><code class="code-text">api.addAddress</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/shipping-addresses</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L108">app/cart/page.tsx:L108</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/shipping-address/shipping-address.routes.ts#L18">src/modules/shipping-address/shipping-address.routes.ts:L18</a><br>➔ <code>ShippingAddressController.createShippingAddress</code></td>
+            </tr>
+            <tr>
+                <td><strong>SHIPPING ADDRESS MODULE</strong></td>
+                <td><code class="code-text">api.updateAddress</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/shipping-addresses/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/shipping-address/shipping-address.routes.ts#L26">src/modules/shipping-address/shipping-address.routes.ts:L26</a><br>➔ <code>ShippingAddressController.updateShippingAddress</code></td>
+            </tr>
+            <tr>
+                <td><strong>SHIPPING ADDRESS MODULE</strong></td>
+                <td><code class="code-text">api.deleteAddress</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/shipping-addresses/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/shipping-address/shipping-address.routes.ts#L34">src/modules/shipping-address/shipping-address.routes.ts:L34</a><br>➔ <code>ShippingAddressController.deleteShippingAddress</code></td>
+            </tr>
+            <tr>
+                <td><strong>SHIPPING ADDRESS MODULE</strong></td>
+                <td><code class="code-text">api.setDefaultAddress</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/shipping-addresses/${id}/default</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>ORDER MODULE</strong></td>
+                <td><code class="code-text">api.createOrder</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/orders/create</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L142">app/cart/page.tsx:L142</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/order/order.routes.ts#L26">src/modules/order/order.routes.ts:L26</a><br>➔ <code>OrderController.createOrder</code></td>
+            </tr>
+            <tr>
+                <td><strong>ORDER MODULE</strong></td>
+                <td><code class="code-text">api.getMyOrders</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/orders/my-orders</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/orders/page.tsx#L30">app/orders/page.tsx:L30</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/order/order.routes.ts#L34">src/modules/order/order.routes.ts:L34</a><br>➔ <code>OrderController.getMyOrders</code></td>
+            </tr>
+            <tr>
+                <td><strong>ORDER MODULE</strong></td>
+                <td><code class="code-text">api.getOrderById</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/orders/${id}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/order/order.routes.ts#L37">src/modules/order/order.routes.ts:L37</a><br>➔ <code>OrderController.getOrderById</code></td>
+            </tr>
+            <tr>
+                <td><strong>ORDER MODULE</strong></td>
+                <td><code class="code-text">api.updateOrderStatus</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/orders/${id}/status</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/order/order.routes.ts#L40">src/modules/order/order.routes.ts:L40</a><br>➔ <code>OrderController.updateOrderStatus</code></td>
+            </tr>
+            <tr>
+                <td><strong>WALLET MODULE</strong></td>
+                <td><code class="code-text">api.getMyWallet</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/wallets/my-wallet</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/cart/page.tsx#L59">app/cart/page.tsx:L59</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/wallet/page.tsx#L54">app/wallet/page.tsx:L54</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/components/Navbar.tsx#L36">components/Navbar.tsx:L36</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/wallet/wallet.routes.ts#L26">src/modules/wallet/wallet.routes.ts:L26</a><br>➔ <code>WalletController.getMyWallet</code></td>
+            </tr>
+            <tr>
+                <td><strong>WALLET MODULE</strong></td>
+                <td><code class="code-text">api.getMyTransactions</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/wallets/transactions</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/wallet/page.tsx#L55">app/wallet/page.tsx:L55</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/wallet/wallet.routes.ts#L29">src/modules/wallet/wallet.routes.ts:L29</a><br>➔ <code>WalletController.getMyTransactions</code></td>
+            </tr>
+            <tr>
+                <td><strong>WALLET MODULE</strong></td>
+                <td><code class="code-text">api.createManualTransaction</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/wallets/admin/manual-transaction</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/wallet/wallet.routes.ts#L32">src/modules/wallet/wallet.routes.ts:L32</a><br>➔ <code>WalletController.createManualTransaction</code></td>
+            </tr>
+            <tr>
+                <td><strong>PAYMENT MODULE</strong></td>
+                <td><code class="code-text">api.createStripeTopup</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/payments/topup/stripe-intent</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/wallet/page.tsx#L79">app/wallet/page.tsx:L79</a></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>PAYMENT MODULE</strong></td>
+                <td><code class="code-text">api.createPayoutRequest</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/payments/payout/request</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/wallet/page.tsx#L108">app/wallet/page.tsx:L108</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/payment/payment.routes.ts#L41">src/modules/payment/payment.routes.ts:L41</a><br>➔ <code>PaymentController.requestPayout</code></td>
+            </tr>
+            <tr>
+                <td><strong>PAYMENT MODULE</strong></td>
+                <td><code class="code-text">api.getPayoutRequests</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/payments/payout/requests</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>CALL CONSULTATION MODULE</strong></td>
+                <td><code class="code-text">api.initiateCall</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/calls/initiate</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/page.tsx#L78">app/page.tsx:L78</a><br><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/psychologists/page.tsx#L89">app/psychologists/page.tsx:L89</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/call/call.routes.ts#L12">src/modules/call/call.routes.ts:L12</a><br>➔ <code>CallController.initiateCall</code></td>
+            </tr>
+            <tr>
+                <td><strong>CALL CONSULTATION MODULE</strong></td>
+                <td><code class="code-text">api.acceptCall</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/calls/accept/${callId}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/psychologists/page.tsx#L98">app/psychologists/page.tsx:L98</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/call/call.routes.ts#L20">src/modules/call/call.routes.ts:L20</a><br>➔ <code>CallController.acceptCall</code></td>
+            </tr>
+            <tr>
+                <td><strong>CALL CONSULTATION MODULE</strong></td>
+                <td><code class="code-text">api.endCall</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/calls/end/${callId}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/psychologists/page.tsx#L119">app/psychologists/page.tsx:L119</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/call/call.routes.ts#L23">src/modules/call/call.routes.ts:L23</a><br>➔ <code>CallController.endCall</code></td>
+            </tr>
+            <tr>
+                <td><strong>CALL CONSULTATION MODULE</strong></td>
+                <td><code class="code-text">api.getCallHistory</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/calls/history</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/call/call.routes.ts#L31">src/modules/call/call.routes.ts:L31</a><br>➔ <code>CallController.getCallHistory</code></td>
+            </tr>
+            <tr>
+                <td><strong>SESSION REVIEWS MODULE</strong></td>
+                <td><code class="code-text">api.createReview</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/session-reviews</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/psychologists/page.tsx#L146">app/psychologists/page.tsx:L146</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/session-review/session-review.routes.ts#L12">src/modules/session-review/session-review.routes.ts:L12</a><br>➔ <code>SessionReviewController.createSessionReview</code></td>
+            </tr>
+            <tr>
+                <td><strong>SESSION REVIEWS MODULE</strong></td>
+                <td><code class="code-text">api.getReviewsForPsychic</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/session-reviews/psychic/${psychicId}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/session-review/session-review.routes.ts#L20">src/modules/session-review/session-review.routes.ts:L20</a><br>➔ <code>SessionReviewController.getPsychicReviews</code></td>
+            </tr>
+            <tr>
+                <td><strong>STORIES MODULE</strong></td>
+                <td><code class="code-text">api.addStory</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/stories</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/stories/page.tsx#L65">app/stories/page.tsx:L65</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/story/story.routes.ts#L12">src/modules/story/story.routes.ts:L12</a><br>➔ <code>StoryController.addStory</code></td>
+            </tr>
+            <tr>
+                <td><strong>STORIES MODULE</strong></td>
+                <td><code class="code-text">api.getStoriesByUser</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/stories/user/${userId}</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/stories/page.tsx#L47">app/stories/page.tsx:L47</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/story/story.routes.ts#L20">src/modules/story/story.routes.ts:L20</a><br>➔ <code>StoryController.getStoriesByUser</code></td>
+            </tr>
+            <tr>
+                <td><strong>STORIES MODULE</strong></td>
+                <td><code class="code-text">api.reactToStory</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/stories/${storyId}/react</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/stories/page.tsx#L84">app/stories/page.tsx:L84</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/story/story.routes.ts#L26">src/modules/story/story.routes.ts:L26</a><br>➔ <code>StoryController.toggleReactStory</code></td>
+            </tr>
+            <tr>
+                <td><strong>STORIES MODULE</strong></td>
+                <td><code class="code-text">api.deleteStory</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/stories/${storyId}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/story/story.routes.ts#L29">src/modules/story/story.routes.ts:L29</a><br>➔ <code>StoryController.deleteStory</code></td>
+            </tr>
+            <tr>
+                <td><strong>FOLLOW & BLOCK MODULES</strong></td>
+                <td><code class="code-text">api.followUser</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/follows/${followedId}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>FOLLOW & BLOCK MODULES</strong></td>
+                <td><code class="code-text">api.unfollowUser</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/follows/${followedId}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>FOLLOW & BLOCK MODULES</strong></td>
+                <td><code class="code-text">api.blockUser</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/block-users</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>FOLLOW & BLOCK MODULES</strong></td>
+                <td><code class="code-text">api.unblockUser</code></td>
+                <td><span class="method-badge method-delete">DELETE</span></td>
+                <td><code class="code-text">/block-users/${blockedId}</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>NOTIFICATIONS MODULE</strong></td>
+                <td><code class="code-text">api.getNotifications</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/notifications</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/notification/notification.routes.ts#L10">src/modules/notification/notification.routes.ts:L10</a><br>➔ <code>NotificationController.getMyNotifications</code></td>
+            </tr>
+            <tr>
+                <td><strong>NOTIFICATIONS MODULE</strong></td>
+                <td><code class="code-text">api.markNotificationAsRead</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/notifications/${id}/read</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/notification/notification.routes.ts#L16">src/modules/notification/notification.routes.ts:L16</a><br>➔ <code>NotificationController.markAsRead</code></td>
+            </tr>
+            <tr>
+                <td><strong>NOTIFICATIONS MODULE</strong></td>
+                <td><code class="code-text">api.markAllNotificationsAsRead</code></td>
+                <td><span class="method-badge method-patch">PATCH</span></td>
+                <td><code class="code-text">/notifications/read-all</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/notification/notification.routes.ts#L13">src/modules/notification/notification.routes.ts:L13</a><br>➔ <code>NotificationController.markAllAsRead</code></td>
+            </tr>
+            <tr>
+                <td><strong>REFERRAL MODULE</strong></td>
+                <td><code class="code-text">api.getMyReferrals</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/referrals/my-referrals</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><span class="mismatch-highlight">Mismatch / Missing</span></td>
+            </tr>
+            <tr>
+                <td><strong>REFERRAL MODULE</strong></td>
+                <td><code class="code-text">api.claimReferral</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/referrals/claim</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/referral/referral.routes.ts#L15">src/modules/referral/referral.routes.ts:L15</a><br>➔ <code>ReferralController.claimReferralCode</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.getDashboardOverview</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/admin/dashboard/overview</code></td>
+                <td><span style="color: #94a3b8; font-style: italic;">Unused</span></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L26">src/modules/admin/admin.routes.ts:L26</a><br>➔ <code>AdminController.getDashboardOverview</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.getAdminUsers</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/admin/users</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L73">app/admin/page.tsx:L73</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L34">src/modules/admin/admin.routes.ts:L34</a><br>➔ <code>AdminController.getAllUsers</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.getPsychologists</code></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td><code class="code-text">/admin/psychologists</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L72">app/admin/page.tsx:L72</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L42">src/modules/admin/admin.routes.ts:L42</a><br>➔ <code>AdminController.getPsychologists</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.approvePsychologist</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/admin/psychologists/${psychologistId}/approve</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L100">app/admin/page.tsx:L100</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L50">src/modules/admin/admin.routes.ts:L50</a><br>➔ <code>AdminController.approvePsychologist</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.rejectPsychologist</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/admin/psychologists/${psychologistId}/reject</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L116">app/admin/page.tsx:L116</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L58">src/modules/admin/admin.routes.ts:L58</a><br>➔ <code>AdminController.rejectPsychologist</code></td>
+            </tr>
+            <tr>
+                <td><strong>ADMIN MODULE</strong></td>
+                <td><code class="code-text">api.updateUserStatus</code></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td><code class="code-text">/admin/users/${userId}/status</code></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/my-app/src/app/admin/page.tsx#L133">app/admin/page.tsx:L133</a></td>
+                <td><a class="file-link" href="file:///c:/Users/Shahidul/Desktop/learning/backend-my-app/backend/src/modules/admin/admin.routes.ts#L67">src/modules/admin/admin.routes.ts:L67</a><br>➔ <code>AdminController.updateUserStatus</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Automated API Mapping Document — Node.js & React Integration Guide
+    </div>
+
+</body>
+</html>

@@ -348,7 +348,7 @@ const getAllowedFieldsForRole = (role: any): string[] => {
       'streetAddress',
       'city',
       'zip',
-      'country',.
+      'country',
       'dateOfBirth',
       'language',
       'hobby',

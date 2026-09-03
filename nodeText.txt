@@ -25,6 +25,7 @@
 - jsonwebtoken: লগিন করার পর ইউজারকে একটি টোকেন দেওয়ার জন্য, যাতে বারবার লগিন করতে না হয়।
 - bcryptjs: ইউজারের পাসওয়ার্ডকে এনক্রিপ্ট (হাইড) করে ডাটাবেজে সেভ করার জন্য, যাতে হ্যাক হলেও পাসওয়ার্ড কেউ না বোঝে।
 - nodemailer: ইউজারের ইমেইলে OTP বা ভেরিফিকেশন মেসেজ পাঠানোর জন্য।
+- npm install prisma@latest : prisma ইনস্টল করার কমান্ড।
 - @prisma/client: ডাটাবেজের সাথে যোগাযোগ করার জন্য এটি Prisma এর মূল ক্লায়েন্ট।
 
 
@@ -377,4 +378,4 @@ Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ [product/cart/shipping-address/
 ✅ সম্পূর্ণ সিস্টেমের রিকোয়েস্ট ফ্লো:
 Request ➜ server.ts ➜ app.ts ➜ main.ts ➜ Module Routes ➜ Module Controller ➜ Module Service ➜ Prisma Database!
 
-
+
